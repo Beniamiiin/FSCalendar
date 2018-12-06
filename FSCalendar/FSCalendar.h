@@ -338,6 +338,21 @@ IB_DESIGNABLE
 @property (assign, nonatomic) IBInspectable CGFloat weekdayHeight;
 
 /**
+ The insets of weekday header of the calendar.
+ */
+@property (assign, nonatomic) UIEdgeInsets calendarWeekdayViewInsets;
+
+/**
+ The insets of month header of the calendar.
+ */
+@property (assign, nonatomic) UIEdgeInsets calendarHeaderViewInsets;
+
+/**
+ The insets of calendar view.
+ */
+@property (assign, nonatomic) UIEdgeInsets calendarCollectionViewInsets;
+
+/**
  The weekday view of the calendar
  */
 @property (strong, nonatomic) FSCalendarWeekdayView *calendarWeekdayView;

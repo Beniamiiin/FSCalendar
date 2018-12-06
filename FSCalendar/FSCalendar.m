@@ -292,30 +292,32 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         }
         
         _contentView.frame = self.bounds;
+        UIEdgeInsets headerInsets = self.calendarHeaderViewInsets;
         CGFloat headerHeight = self.preferredHeaderHeight;
+        UIEdgeInsets weekdayInsets = self.calendarWeekdayViewInsets;
         CGFloat weekdayHeight = self.preferredWeekdayHeight;
         CGFloat rowHeight = self.preferredRowHeight;
-        CGFloat padding = 5;
+        CGFloat padding = self.collectionViewLayout.sectionInsets.top + self.collectionViewLayout.sectionInsets.bottom;
         if (self.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
             rowHeight = FSCalendarFloor(rowHeight*2)*0.5; // Round to nearest multiple of 0.5. e.g. (16.8->16.5),(16.2->16.0)
         }
         
-        self.calendarHeaderView.frame = CGRectMake(0, 0, self.fs_width, headerHeight);
-        self.calendarWeekdayView.frame = CGRectMake(0, self.calendarHeaderView.fs_bottom, self.contentView.fs_width, weekdayHeight);
+        self.calendarHeaderView.frame = CGRectMake(headerInsets.left, headerInsets.top, self.fs_width - headerInsets.left - headerInsets.right, headerHeight);
+        self.calendarWeekdayView.frame = CGRectMake(weekdayInsets.left, self.calendarHeaderView.fs_bottom + headerInsets.bottom + weekdayInsets.top, self.contentView.fs_width - weekdayInsets.left - weekdayInsets.right, weekdayHeight);
 
-        _deliver.frame = CGRectMake(self.calendarHeaderView.fs_left, self.calendarHeaderView.fs_top, self.calendarHeaderView.fs_width, headerHeight+weekdayHeight);
+        _deliver.frame = CGRectMake(self.calendarHeaderView.fs_left, self.calendarHeaderView.fs_top, self.calendarHeaderView.fs_width, headerInsets.top+headerHeight+headerInsets.top+weekdayInsets.top+weekdayHeight+weekdayInsets.bottom);
         _deliver.hidden = self.calendarHeaderView.hidden;
         if (!self.floatingMode) {
             switch (self.transitionCoordinator.representingScope) {
                 case FSCalendarScopeMonth: {
-                    CGFloat contentHeight = rowHeight*6 + padding*2;
-                    _daysContainer.frame = CGRectMake(0, headerHeight+weekdayHeight, self.fs_width, contentHeight);
+                    CGFloat contentHeight = rowHeight*6 + padding;
+                    _daysContainer.frame = CGRectMake(0, CGRectGetHeight(_deliver.frame), self.fs_width, contentHeight);
                     _collectionView.frame = CGRectMake(0, 0, _daysContainer.fs_width, contentHeight);
                     break;
                 }
                 case FSCalendarScopeWeek: {
-                    CGFloat contentHeight = rowHeight + padding*2;
-                    _daysContainer.frame = CGRectMake(0, headerHeight+weekdayHeight, self.fs_width, contentHeight);
+                    CGFloat contentHeight = rowHeight + padding;
+                    _daysContainer.frame = CGRectMake(0, CGRectGetHeight(_deliver.frame), self.fs_width, contentHeight);
                     _collectionView.frame = CGRectMake(0, 0, _daysContainer.fs_width, contentHeight);
                     break;
                 }
@@ -323,7 +325,7 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
         } else {
             
             CGFloat contentHeight = _contentView.fs_height;
-            _daysContainer.frame = CGRectMake(0, 0, self.fs_width, contentHeight);
+            _daysContainer.frame = CGRectMake(0, CGRectGetHeight(_deliver.frame), self.fs_width, contentHeight);
             _collectionView.frame = _daysContainer.bounds;
             
         }
@@ -807,6 +809,22 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
     }
 }
 
+- (void)setCalendarCollectionViewInsets:(UIEdgeInsets)calendarCollectionViewInsets
+{
+    _collectionViewLayout.sectionInsets = calendarCollectionViewInsets;
+    [_collectionViewLayout invalidateLayout];
+}
+
+- (void)setCalendarHeaderView:(FSCalendarHeaderView *)calendarHeaderView
+{
+    [_calendarHeaderView removeFromSuperview];
+    calendarHeaderView.calendar = self;
+    calendarHeaderView.scrollEnabled = _scrollEnabled;
+    [_contentView addSubview:calendarHeaderView];
+    _calendarHeaderView = calendarHeaderView;
+    [self setNeedsLayout];
+}
+
 - (void)setLocale:(NSLocale *)locale
 {
     if (![_locale isEqual:locale]) {
@@ -921,12 +939,12 @@ typedef NS_ENUM(NSUInteger, FSCalendarOrientation) {
 - (CGFloat)preferredRowHeight
 {
     if (_preferredRowHeight == FSCalendarAutomaticDimension) {
-        CGFloat headerHeight = self.preferredHeaderHeight;
-        CGFloat weekdayHeight = self.preferredWeekdayHeight;
+        CGFloat headerHeight = self.preferredHeaderHeight + self.calendarHeaderViewInsets.top + self.calendarHeaderViewInsets.bottom;
+        CGFloat weekdayHeight = self.preferredWeekdayHeight + self.calendarWeekdayViewInsets.top + self.calendarWeekdayViewInsets.bottom;
         CGFloat contentHeight = self.transitionCoordinator.cachedMonthSize.height-headerHeight-weekdayHeight;
-        CGFloat padding = 5;
+        CGFloat padding = self.collectionViewLayout.sectionInsets.top + self.collectionViewLayout.sectionInsets.bottom;
         if (!self.floatingMode) {
-            _preferredRowHeight = (contentHeight-padding*2)/6.0;
+            _preferredRowHeight = (contentHeight-padding)/6.0;
         } else {
             _preferredRowHeight = _rowHeight;
         }

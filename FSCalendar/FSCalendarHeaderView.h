@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class FSCalendar, FSCalendarAppearance, FSCalendarHeaderLayout, FSCalendarCollectionView;
+@class FSCalendar, FSCalendarHeaderCell, FSCalendarAppearance, FSCalendarHeaderLayout, FSCalendarCollectionView;
 
 @interface FSCalendarHeaderView : UIView
 
@@ -21,6 +21,7 @@
 
 - (void)setScrollOffset:(CGFloat)scrollOffset;
 - (void)setScrollOffset:(CGFloat)scrollOffset animated:(BOOL)animated;
+- (void)configureCell:(FSCalendarHeaderCell *)cell atIndexPath:(NSIndexPath *)indexPath;
 - (void)reloadData;
 - (void)configureAppearance;
 
